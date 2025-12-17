@@ -562,4 +562,38 @@
         }
     </script>
 </body>
+
 </html>
+const productState = {
+  color: 'bg-neutral-800',
+  decal: 'none',
+  scale: 1,
+  rotation: { x: 0, y: 0 },
+  velocity: { x: 0, y: 0 },
+};
+{
+  "color": "bg-indigo-900",
+  "decal": "barcode",
+  "scale": 1.1,
+  "rotation": { "x": 12, "y": -18 }
+}
+const productState = {
+  color: 'bg-neutral-800',
+  decal: 'none',
+  scale: 1,
+  rotation: { x: 0, y: 0 },
+  velocity: { x: 0, y: 0 },
+};
+function changeColor(colorClass) {
+  productState.color = colorClass;
+  renderProduct();
+}
+function renderProduct() {
+  garment.className =
+    'absolute inset-0 rounded-xl shadow-2xl overflow-hidden transition-colors duration-500 flex items-center justify-center border border-white/5 ' +
+    productState.color;
+
+  garment.style.transform = `scale(${productState.scale})`;
+}
+
+

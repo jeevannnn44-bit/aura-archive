@@ -348,9 +348,11 @@
                     <!-- Color Picker -->
                     <div>
                         <label class="text-xs uppercase tracking-widest text-neutral-500 mb-3 block">Base Pigment</label>
-                        <div class="flex gap-3">
-                            <button onclick="changeColor('bg-neutral-800')" class="w-10 h-10 rounded-full bg-neutral-800 border-2 border-white ring-2 ring-transparent focus:ring-white transition-all"></button>
-                            <button onclick="changeColor('bg-red-900')" class="w-10 h-10 rounded-full bg-red-900 border-2 border-transparent ring-2 ring-transparent focus:ring-white hover:border-white/50 transition-all"></button>
+                        <div class="flex gap-3"> <button onclick="changeColor('#1f2937')"></button>
+<button onclick="changeColor('#7f1d1d')"></button>
+<button onclick="changeColor('#312e81')"></button>
+<button onclick="changeColor('#064e3b')"></button>
+<button onclick="changeColor('bg-red-900')" class="w-10 h-10 rounded-full bg-red-900 border-2 border-transparent ring-2 ring-transparent focus:ring-white hover:border-white/50 transition-all"></button>
                             <button onclick="changeColor('bg-indigo-900')" class="w-10 h-10 rounded-full bg-indigo-900 border-2 border-transparent ring-2 ring-transparent focus:ring-white hover:border-white/50 transition-all"></button>
                             <button onclick="changeColor('bg-emerald-900')" class="w-10 h-10 rounded-full bg-emerald-900 border-2 border-transparent ring-2 ring-transparent focus:ring-white hover:border-white/50 transition-all"></button>
                         </div>
@@ -383,8 +385,9 @@
             </div>
 
             <!-- 3D Mockup Area (Right) -->
-            <div class="w-full lg:w-2/3 h-[500px] lg:h-[600px] relative scene flex items-center justify-center bg-black/40 border border-white/5 rounded-2xl overflow-hidden" id="mockup-container">
-                <!-- Grid Background -->
+           <div class="w-full lg:w-2/3 h-[500px] lg:h-[600px] relative bg-black/40 border border-white/5 rounded-2xl overflow-hidden" id="mockup-container">
+    <!-- Three.js canvas injected here -->
+</div>
                 <div class="absolute inset-0" style="background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px;"></div>
                 
                 <!-- The 3D Object (Simulated Hoodie) -->
@@ -505,62 +508,105 @@
 
     <!-- Scripts for Interaction -->
     <script>
-        // 3D Tilt Effect for the Product Customizer
-        const container = document.getElementById('mockup-container');
-        const card = document.getElementById('product-card');
+       <script>
+let scene, camera, renderer, hoodie, controls;
+const container = document.getElementById("mockup-container");
 
-        container.addEventListener('mousemove', (e) => {
-            const rect = container.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            // Calculate rotation based on cursor position relative to center
-            const xRotation = -((y - rect.height / 2) / 20); 
-            const yRotation = (x - rect.width / 2) / 20;
-            
-            card.style.transform = `rotateX(${xRotation}deg) rotateY(${yRotation}deg) scale3d(1.05, 1.05, 1.05)`;
-        });
+// Scene
+scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050505);
 
-        container.addEventListener('mouseleave', () => {
-            card.style.transform = 'rotateX(0) rotateY(0) scale3d(1, 1, 1)';
-        });
+// Camera
+camera = new THREE.PerspectiveCamera(
+  35,
+  container.clientWidth / container.clientHeight,
+  0.1,
+  100
+);
+camera.position.set(0, 1.3, 4);
 
-        // Customizer Logic
-        const garment = document.getElementById('garment-base');
-        const decalArea = document.getElementById('decal-area');
-        const sizeLabel = document.getElementById('size-label');
+// Renderer
+renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
 
-        function changeColor(colorClass) {
-            // Remove existing color classes
-            garment.classList.remove('bg-neutral-800', 'bg-red-900', 'bg-indigo-900', 'bg-emerald-900');
-            // Add new color
-            garment.classList.add(colorClass);
-        }
+// Lights
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+keyLight.position.set(5, 10, 7);
+scene.add(keyLight);
 
-        function setDecal(type) {
-            decalArea.innerHTML = ''; // Clear current
-            let icon = '';
-            
-            if(type === 'logo') {
-                icon = '<span class="iconify text-white text-6xl opacity-80" data-icon="lucide:box-select"></span>';
-            } else if (type === 'warning') {
-                icon = '<span class="iconify text-yellow-400 text-6xl opacity-80" data-icon="lucide:triangle-alert"></span>';
-            } else if (type === 'barcode') {
-                icon = '<span class="iconify text-white text-6xl opacity-80" data-icon="lucide:qr-code"></span>';
-            }
-            
-            if(icon) {
-                decalArea.innerHTML = icon;
-            }
-        }
+// Controls
+controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableZoom = false;
+controls.enablePan = false;
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
 
-        function updateSize(val) {
-            const scale = val / 100;
-            sizeLabel.innerText = val + '%';
-            // We apply size scale to the inner garment, not the 3D container to avoid messing up the tilt
-            garment.style.transform = `scale(${scale})`;
-        }
-    </script>
+// Load Model (TEMP PLACEHOLDER)
+const loader = new THREE.GLTFLoader();
+loader.load(
+  "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf",
+  (gltf) => {
+    hoodie = gltf.scene;
+    hoodie.scale.set(1.8, 1.8, 1.8);
+    hoodie.position.y = -1.1;
+    scene.add(hoodie);
+  }
+);
+
+// Animate
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  if (hoodie) hoodie.rotation.y += 0.0008;
+  renderer.render(scene, camera);
+}
+animate();
+
+// Resize
+window.addEventListener("resize", () => {
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth, container.clientHeight);
+});
+<script>
+// COLOR CHANGE (REAL 3D)
+function changeColor(hex) {
+  if (!hoodie) return;
+  hoodie.traverse((child) => {
+    if (child.isMesh) {
+      child.material.color.set(hex);
+      child.material.roughness = 0.45;
+      child.material.metalness = 0.05;
+    }
+  });
+}
+
+// DECAL UPLOAD
+function applyDecal(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const texture = new THREE.TextureLoader().load(e.target.result);
+    hoodie.traverse((child) => {
+      if (child.isMesh) {
+        child.material.map = texture;
+        child.material.needsUpdate = true;
+      }
+    });
+  };
+  reader.readAsDataURL(file);
+}
+</script>
+</script>
+   <!-- 3D ENGINE LIBRARIES -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+ </script>
 </body>
 
 </html>
+

@@ -1,0 +1,53 @@
+loader.load(
+  "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Clothing/glTF-Binary/Clothing.glb",
+hoodie.scale.set(2.2, 2.2, 2.2);
+hoodie.position.set(0, -1.4, 0);
+hoodie.rotation.y = Math.PI;
+hoodie.traverse((child) => {
+  if (child.isMesh) {
+    child.material.roughness = 0.65;
+    child.material.metalness = 0.02;
+    child.material.normalScale.set(1.2, 1.2);
+  }
+});
+let decalMesh;
+
+function applyLogo(textureURL) {
+  const texture = new THREE.TextureLoader().load(textureURL);
+
+  const decalMaterial = new THREE.MeshStandardMaterial({
+    map: texture,
+    transparent: true,
+    depthTest: true,
+    depthWrite: false,
+    polygonOffset: true,
+    polygonOffsetFactor: -4,
+  });
+
+  const decalGeometry = new THREE.DecalGeometry(
+    hoodie.children[0],
+    new THREE.Vector3(0, 0.2, 0.6), // chest position
+    new THREE.Euler(0, 0, 0),
+    new THREE.Vector3(0.4, 0.4, 0.4)
+  );
+
+  if (decalMesh) scene.remove(decalMesh);
+  decalMesh = new THREE.Mesh(decalGeometry, decalMaterial);
+  scene.add(decalMesh);
+}
+<button onclick="applyLogo('https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg')">
+  Apply Logo
+</button>
+function moveLogo(x, y, z) {
+  if (!decalMesh) return;
+  decalMesh.position.set(x, y, z);
+}
+
+function scaleLogo(s) {
+  if (!decalMesh) return;
+  decalMesh.scale.setScalar(s);
+}
+function enterAR() {
+  hoodie.position.set(0, -1, -2);
+  hoodie.scale.set(1.5, 1.5, 1.5);
+}

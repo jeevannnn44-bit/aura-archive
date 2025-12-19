@@ -560,7 +560,7 @@ loader.load(
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
-  if (hoodie) hoodie.rotation.y += 0.0008;
+  if (hoodie) hoodie.rotation.y += 0.0004;
   renderer.render(scene, camera);
 }
 animate();
@@ -660,110 +660,9 @@ function applyDecal(file) {
         </div>
       </div>
     </div>
-
-    <!-- RIGHT: 3D VIEWPORT -->
-    <div id="mockup-container"
-         class="w-full h-[500px] lg:h-[600px] bg-black/40 border border-white/5 rounded-2xl overflow-hidden">
-    </div>
-
-  </div>
-</section>
-
-<!-- ================= THREE.JS LIBRARIES ================= -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/controls/OrbitControls.js"></script>
-
-<!-- ================= THREE.JS APP ================= -->
-<script>
-let scene, camera, renderer, hoodie, controls;
-const container = document.getElementById("mockup-container");
-
-/* SCENE */
-scene = new THREE.Scene();
-scene.background = new THREE.Color(0x050505);
-
-/* CAMERA */
-camera = new THREE.PerspectiveCamera(
-  35,
-  container.clientWidth / container.clientHeight,
-  0.1,
-  100
-);
-camera.position.set(0, 1.4, 4);
-
-/* RENDERER */
-renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setSize(container.clientWidth, container.clientHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
-container.appendChild(renderer.domElement);
-
-/* LIGHTING */
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-
-const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
-keyLight.position.set(5, 10, 7);
-scene.add(keyLight);
-
-/* CONTROLS */
-controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableZoom = false;
-controls.enablePan = false;
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-
-/* LOAD HOODIE MODEL */
-const loader = new THREE.GLTFLoader();
-loader.load(
-  "models/hoodie.glb",
-  (gltf) => {
-    hoodie = gltf.scene;
-    hoodie.scale.set(1.8, 1.8, 1.8);
-    hoodie.position.y = -1.2;
-
-    hoodie.traverse((child) => {
-      if (child.isMesh) {
-        child.material.roughness = 0.55;
-        child.material.metalness = 0.05;
-      }
-    });
-
-    scene.add(hoodie);
-  },
-  undefined,
-  (err) => console.error(err)
-);
-
-/* ANIMATE */
-function animate() {
-  requestAnimationFrame(animate);
-  controls.update();
-  renderer.render(scene, camera);
-}
-animate();
-
-/* RESIZE */
-window.addEventListener("resize", () => {
-  camera.aspect = container.clientWidth / container.clientHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(container.clientWidth, container.clientHeight);
-});
-
-/* COLOR CONTROL */
-function changeColor(hex) {
-  if (!hoodie) return;
-  hoodie.traverse((child) => {
-    if (child.isMesh) {
-      child.material.color.set(hex);
-    }
-  });
-}
-</script>
-
-</body>
-</html>
 </body>
 
 </html>
+
 
 

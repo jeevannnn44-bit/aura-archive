@@ -606,7 +606,164 @@ function applyDecal(file) {
 <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
  </script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AURA / ARCHIVE</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background:#050505;
+      color:#e5e5e5;
+      overflow-x:hidden;
+    }
+    h1,h2,h3,.brand-font {
+      font-family:'Space Grotesk',sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ================= FABRICATE SECTION ================= -->
+<section id="fabricate" class="py-24 bg-neutral-900 border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+    <!-- LEFT: CONTROLS -->
+    <div class="space-y-8">
+      <h2 class="text-4xl tracking-tight">FABRICATE<br>YOUR REALITY</h2>
+      <p class="text-neutral-400 text-sm max-w-md">
+        Customize your hoodie in real-time using our 3D engine.
+      </p>
+
+      <!-- COLOR PICKER -->
+      <div>
+        <label class="text-xs uppercase tracking-widest text-neutral-500 mb-2 block">
+          Base Color
+        </label>
+        <div class="flex gap-3">
+          <button onclick="changeColor('#111827')" class="w-10 h-10 bg-gray-900 rounded-full"></button>
+          <button onclick="changeColor('#7f1d1d')" class="w-10 h-10 bg-red-900 rounded-full"></button>
+          <button onclick="changeColor('#312e81')" class="w-10 h-10 bg-indigo-900 rounded-full"></button>
+          <button onclick="changeColor('#064e3b')" class="w-10 h-10 bg-emerald-900 rounded-full"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: 3D VIEWPORT -->
+    <div id="mockup-container"
+         class="w-full h-[500px] lg:h-[600px] bg-black/40 border border-white/5 rounded-2xl overflow-hidden">
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= THREE.JS LIBRARIES ================= -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/examples/js/controls/OrbitControls.js"></script>
+
+<!-- ================= THREE.JS APP ================= -->
+<script>
+let scene, camera, renderer, hoodie, controls;
+const container = document.getElementById("mockup-container");
+
+/* SCENE */
+scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050505);
+
+/* CAMERA */
+camera = new THREE.PerspectiveCamera(
+  35,
+  container.clientWidth / container.clientHeight,
+  0.1,
+  100
+);
+camera.position.set(0, 1.4, 4);
+
+/* RENDERER */
+renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
+
+/* LIGHTING */
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+keyLight.position.set(5, 10, 7);
+scene.add(keyLight);
+
+/* CONTROLS */
+controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableZoom = false;
+controls.enablePan = false;
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+
+/* LOAD HOODIE MODEL */
+const loader = new THREE.GLTFLoader();
+loader.load(
+  "models/hoodie.glb",
+  (gltf) => {
+    hoodie = gltf.scene;
+    hoodie.scale.set(1.8, 1.8, 1.8);
+    hoodie.position.y = -1.2;
+
+    hoodie.traverse((child) => {
+      if (child.isMesh) {
+        child.material.roughness = 0.55;
+        child.material.metalness = 0.05;
+      }
+    });
+
+    scene.add(hoodie);
+  },
+  undefined,
+  (err) => console.error(err)
+);
+
+/* ANIMATE */
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+/* RESIZE */
+window.addEventListener("resize", () => {
+  camera.aspect = container.clientWidth / container.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth, container.clientHeight);
+});
+
+/* COLOR CONTROL */
+function changeColor(hex) {
+  if (!hoodie) return;
+  hoodie.traverse((child) => {
+    if (child.isMesh) {
+      child.material.color.set(hex);
+    }
+  });
+}
+</script>
+
+</body>
+</html>
 </body>
 
 </html>
+
 
